@@ -38,14 +38,26 @@ body {
 
 /* ── OVERLAYS ── */
 .overlay {
-  position: fixed; inset: 0; z-index: 500;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  padding: 24px 20px;
+  position: fixed; 
+  inset: 0; 
+  z-index: 500;
+  display: flex; 
+  flex-direction: column;
+  align-items: center; 
+  /* Change 'center' to 'flex-start' to allow top-down scrolling */
+  justify-content: flex-start; 
+  padding: 40px 20px;
+  /* Add this to enable scrolling */
+  overflow-y: auto; 
   transition: opacity 0.4s ease, visibility 0.4s;
+  -webkit-overflow-scrolling: touch;
 }
 .overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-#setup-overlay { background: var(--ink); }
+#setup-overlay { 
+  background: var(--ink); 
+  /* Ensure content doesn't hit the very bottom */
+  padding-bottom: 80px; 
+}
 #loading-overlay { background: var(--paper); }
 
 /* Setup */
