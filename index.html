@@ -296,27 +296,9 @@ body {
 <div class="overlay" id="setup-overlay">
   <div class="logo-text">The Global Record</div>
   <div class="logo-sub">Brisbane Edition · Factual · Free · Daily</div>
-  <div class="card">
-    <h2>Two steps to your daily paper.</h2>
-    <p>This app fetches live headlines from Reuters, AP &amp; BBC, then uses Google Gemini AI (free) to format them as a broadsheet newspaper — styled like the edition you saw, updated every day in Brisbane time.</p>
-
-    <div class="steps">
-      <strong>Step 1 — Free Gemini API key (2 min):</strong><br>
-      1. Go to <a href="https://aistudio.google.com/app/apikey" target="_blank">aistudio.google.com/app/apikey</a><br>
-      2. Sign in with any Google account<br>
-      3. Click <strong>Create API Key</strong> → copy it
-    </div>
-    <input class="field" type="password" id="setup-key" placeholder="AIzaSy..." autocomplete="off" spellcheck="false">
-    <div class="err-line" id="setup-err">Key should start with AIza and be at least 30 characters.</div>
-
-    <div class="steps">
-      <strong>Step 2 — Free Worker URL (10 min):</strong><br>
-      Follow SETUP.md in the repo to deploy the Cloudflare Worker.<br>
-      Then paste your Worker URL below.
-    </div>
-    <input class="field" type="url" id="setup-worker" placeholder="https://global-record-proxy.your-name.workers.dev">
-    <div class="field-hint">Leave blank to use the built-in fallback proxy (less reliable).</div>
-
+  <div class="card" style="text-align:center;">
+    <h2>Ready for today's edition?</h2>
+    <p>Click below to fetch the latest headlines and generate your daily broadsheet.</p>
     <button class="btn-go" onclick="handleSetup()">Launch My Daily Paper →</button>
   </div>
 </div>
@@ -424,18 +406,24 @@ function getS() {
 function setS(s) { localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); }
 
 function handleSetup() {
-  // Hardcode your credentials here
-  const key    = "YOUR_ACTUAL_API_KEY_HERE"; 
-  const worker = "https://your-worker-name.your-subdomain.workers.dev";
-
   const s = getS();
-  s.apiKey    = key;
-  s.workerUrl = worker;
+  // We leave apiKey blank because the Cloudflare Worker now handles it!
+  s.apiKey = ""; 
+  s.workerUrl = "https://your-worker-name.your-subdomain.workers.dev"; // Use your actual worker URL
   setS(s);
   
-  // Immediately proceed to the app
   document.getElementById('setup-overlay').classList.add('hidden');
   startApp();
+}
+async function startApp() {
+  const cachedHtml = getCached();
+  if (cachedHtml) {
+    document.getElementById('newspaper').innerHTML = cachedHtml;
+    showView('paper');
+  } else {
+    // No cache? Run the generator
+    await generate();
+  }
 }
 
 function saveSettings() {
