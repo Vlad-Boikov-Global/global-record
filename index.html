@@ -424,19 +424,16 @@ function getS() {
 function setS(s) { localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); }
 
 function handleSetup() {
-  const key    = document.getElementById('setup-key').value.trim();
-  const worker = document.getElementById('setup-worker').value.trim();
-  const err    = document.getElementById('setup-err');
-
-  if (!key.startsWith('AIza') || key.length < 30) {
-    err.style.display = 'block'; return;
-  }
-  err.style.display = 'none';
+  // Hardcode your credentials here
+  const key    = "YOUR_ACTUAL_API_KEY_HERE"; 
+  const worker = "https://your-worker-name.your-subdomain.workers.dev";
 
   const s = getS();
   s.apiKey    = key;
   s.workerUrl = worker;
   setS(s);
+  
+  // Immediately proceed to the app
   document.getElementById('setup-overlay').classList.add('hidden');
   startApp();
 }
