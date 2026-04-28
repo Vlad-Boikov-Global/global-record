@@ -409,7 +409,7 @@ function handleSetup() {
   const s = getS();
   // We leave apiKey blank because the Cloudflare Worker now handles it!
   s.apiKey = ""; 
-  s.workerUrl = "https://your-worker-name.your-subdomain.workers.dev"; // Use your actual worker URL
+  s.workerUrl = "https://global-record-proxy.vboiiikov.workers.dev/"; // Use your actual worker URL
   setS(s);
   
   document.getElementById('setup-overlay').classList.add('hidden');
