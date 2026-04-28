@@ -13,8 +13,9 @@
 <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;1,8..60,400&family=Libre+Franklin:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 /* ═══════════════════════════════════════
-   THE GLOBAL RECORD  — Daily Newspaper PWA
-   Free stack: GitHub Pages + Cloudflare Worker + Gemini AI
+   THE GLOBAL RECORD — Daily Newspaper PWA
+   GitHub Pages + Cloudflare Worker + Gemini AI
+   API key lives in Cloudflare — never in the browser
 ═══════════════════════════════════════ */
 :root {
   --ink: #1a1208;
@@ -38,29 +39,19 @@ body {
 
 /* ── OVERLAYS ── */
 .overlay {
-  position: fixed; 
-  inset: 0; 
-  z-index: 500;
-  display: flex; 
-  flex-direction: column;
-  align-items: center; 
-  /* Change 'center' to 'flex-start' to allow top-down scrolling */
-  justify-content: flex-start; 
-  padding: 40px 20px;
-  /* Add this to enable scrolling */
-  overflow-y: auto; 
+  position: fixed; inset: 0; z-index: 500;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: flex-start;
+  padding: 40px 20px 80px;
+  overflow-y: auto;
   transition: opacity 0.4s ease, visibility 0.4s;
   -webkit-overflow-scrolling: touch;
 }
 .overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-#setup-overlay { 
-  background: var(--ink); 
-  /* Ensure content doesn't hit the very bottom */
-  padding-bottom: 80px; 
-}
-#loading-overlay { background: var(--paper); }
+#setup-overlay { background: var(--ink); }
+#loading-overlay { background: var(--paper); justify-content: center; }
 
-/* Setup */
+/* Setup card */
 .logo-text {
   font-family: 'UnifrakturMaguntia', cursive;
   font-size: clamp(44px, 11vw, 76px);
@@ -77,30 +68,10 @@ body {
   background: var(--paper); border-radius: 2px;
   padding: 24px 22px; width: 100%; max-width: 430px;
   box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+  text-align: center;
 }
-.card h2 {
-  font-family: 'Playfair Display', serif;
-  font-size: 20px; font-weight: 900;
-  margin-bottom: 10px;
-}
-.card p { font-size: 12.5px; line-height: 1.7; color: var(--mid); margin-bottom: 14px; }
-.card a { color: var(--accent); font-weight: 600; text-decoration: none; }
-.steps {
-  background: var(--aged); border-left: 3px solid var(--accent);
-  padding: 10px 14px; margin-bottom: 16px;
-  font-size: 12px; line-height: 1.85; color: var(--ink);
-}
-.steps strong { font-family: 'Libre Franklin', sans-serif; font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase; }
-.field {
-  width: 100%; border: 1px solid var(--light-rule);
-  background: white; padding: 11px 13px;
-  font-family: 'Libre Franklin', sans-serif; font-size: 13px;
-  border-radius: 2px; margin-bottom: 10px;
-  color: var(--ink); outline: none;
-  transition: border-color 0.2s;
-}
-.field:focus { border-color: var(--accent); }
-.field-hint { font-family: 'Libre Franklin', sans-serif; font-size: 10px; color: var(--mid); margin-bottom: 14px; line-height: 1.5; }
+.card h2 { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 900; margin-bottom: 10px; }
+.card p { font-size: 12.5px; line-height: 1.7; color: var(--mid); margin-bottom: 20px; }
 .btn-go {
   width: 100%; background: var(--rule); color: var(--paper);
   border: none; padding: 13px; font-family: 'Libre Franklin', sans-serif;
@@ -108,30 +79,13 @@ body {
   cursor: pointer; border-radius: 2px; transition: background 0.2s;
 }
 .btn-go:hover { background: var(--accent); }
-.err-line {
-  font-family: 'Libre Franklin', sans-serif; font-size: 10.5px;
-  color: #c0392b; margin-bottom: 10px; display: none;
-}
 
 /* Loading */
-.load-logo {
-  font-family: 'UnifrakturMaguntia', cursive;
-  font-size: clamp(38px, 10vw, 68px);
-  color: var(--ink); margin-bottom: 4px;
-}
+.load-logo { font-family: 'UnifrakturMaguntia', cursive; font-size: clamp(38px, 10vw, 68px); color: var(--ink); margin-bottom: 4px; }
 .load-rule { width: 160px; height: 1px; background: var(--light-rule); margin: 0 auto 20px; }
-.progress-track {
-  width: 200px; height: 2px; background: var(--light-rule);
-  border-radius: 1px; overflow: hidden; margin-bottom: 14px;
-}
-.progress-fill {
-  height: 100%; background: var(--rule);
-  width: 0%; transition: width 0.6s ease;
-}
-.load-label {
-  font-family: 'Libre Franklin', sans-serif; font-size: 9.5px;
-  letter-spacing: 0.2em; text-transform: uppercase; color: var(--mid);
-}
+.progress-track { width: 200px; height: 2px; background: var(--light-rule); border-radius: 1px; overflow: hidden; margin-bottom: 14px; }
+.progress-fill { height: 100%; background: var(--rule); width: 0%; transition: width 0.6s ease; }
+.load-label { font-family: 'Libre Franklin', sans-serif; font-size: 9.5px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mid); }
 
 /* ── APP SHELL ── */
 #app { display: none; padding: 12px 12px 80px; min-height: 100vh; animation: rise 0.5s ease both; }
@@ -140,8 +94,7 @@ body {
 
 /* ── NEWSPAPER ── */
 .newspaper {
-  max-width: 920px; margin: 0 auto;
-  background: var(--paper);
+  max-width: 920px; margin: 0 auto; background: var(--paper);
   box-shadow: 0 2px 4px rgba(0,0,0,0.07), 0 8px 32px rgba(0,0,0,0.2), 0 24px 60px rgba(0,0,0,0.12);
   position: relative; padding-bottom: 32px;
 }
@@ -154,60 +107,24 @@ body {
 
 /* Header */
 .np-header { border-bottom: 3px double var(--rule); padding: 16px 22px 12px; }
-.np-meta {
-  display: flex; justify-content: space-between; align-items: center;
-  font-family: 'Libre Franklin', sans-serif; font-size: 8.5px;
-  letter-spacing: 0.09em; text-transform: uppercase; color: var(--mid);
-  margin-bottom: 8px; flex-wrap: wrap; gap: 4px;
-}
+.np-meta { display: flex; justify-content: space-between; align-items: center; font-family: 'Libre Franklin', sans-serif; font-size: 8.5px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--mid); margin-bottom: 8px; flex-wrap: wrap; gap: 4px; }
 .masthead { text-align: center; margin-bottom: 9px; }
 .masthead-rule { height: 1px; background: var(--rule); margin: 5px 0; }
-.masthead h1 {
-  font-family: 'UnifrakturMaguntia', cursive;
-  font-size: clamp(44px, 10vw, 88px); color: var(--ink); line-height: 1;
-}
-.masthead-sub {
-  font-family: 'Libre Franklin', sans-serif; font-size: 8.5px;
-  letter-spacing: 0.24em; text-transform: uppercase; color: var(--mid);
-}
-.section-nav {
-  border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);
-  padding: 5px 0; margin-top: 7px;
-  display: flex; align-items: center; justify-content: center;
-  gap: 14px; flex-wrap: wrap;
-  font-family: 'Libre Franklin', sans-serif; font-size: 8.5px;
-  text-transform: uppercase; letter-spacing: 0.12em; color: var(--mid);
-}
+.masthead h1 { font-family: 'UnifrakturMaguntia', cursive; font-size: clamp(44px, 10vw, 88px); color: var(--ink); line-height: 1; }
+.masthead-sub { font-family: 'Libre Franklin', sans-serif; font-size: 8.5px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--mid); }
+.section-nav { border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 5px 0; margin-top: 7px; display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; font-family: 'Libre Franklin', sans-serif; font-size: 8.5px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--mid); }
 .section-nav .dot { color: var(--accent); }
 
 /* Ticker */
-.ticker-wrap {
-  background: var(--rule); color: var(--paper); padding: 5px 0;
-  overflow: hidden; font-family: 'Libre Franklin', sans-serif;
-  font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; white-space: nowrap;
-}
+.ticker-wrap { background: var(--rule); color: var(--paper); padding: 5px 0; overflow: hidden; font-family: 'Libre Franklin', sans-serif; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; white-space: nowrap; }
 .ticker-inner { display: inline-block; padding-left: 100%; animation: ticker-go 60s linear infinite; }
 @keyframes ticker-go { to { transform: translateX(-100%); } }
 
-/* Content area */
+/* Content */
 .np-body { padding: 0 22px 24px; }
-
-/* Article typography */
-.section-tag {
-  font-family: 'Libre Franklin', sans-serif; font-size: 8px;
-  letter-spacing: 0.24em; text-transform: uppercase;
-  color: var(--paper); background: var(--rule);
-  display: inline-block; padding: 2px 9px; margin: 18px 0 12px;
-}
-.art-kicker {
-  font-family: 'Libre Franklin', sans-serif; font-size: 8.5px;
-  letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 4px;
-}
-.flag {
-  display: inline-block; background: var(--accent); color: var(--paper);
-  font-family: 'Libre Franklin', sans-serif; font-size: 7.5px;
-  letter-spacing: 0.15em; text-transform: uppercase; padding: 1px 6px; margin-bottom: 5px;
-}
+.section-tag { font-family: 'Libre Franklin', sans-serif; font-size: 8px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--paper); background: var(--rule); display: inline-block; padding: 2px 9px; margin: 18px 0 12px; }
+.art-kicker { font-family: 'Libre Franklin', sans-serif; font-size: 8.5px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
+.flag { display: inline-block; background: var(--accent); color: var(--paper); font-family: 'Libre Franklin', sans-serif; font-size: 7.5px; letter-spacing: 0.15em; text-transform: uppercase; padding: 1px 6px; margin-bottom: 5px; }
 .hl-jumbo { font-family: 'Playfair Display', serif; font-size: clamp(22px, 5.5vw, 40px); font-weight: 900; line-height: 1.08; margin-bottom: 8px; }
 .hl-xl    { font-family: 'Playfair Display', serif; font-size: clamp(18px, 4vw, 26px);  font-weight: 900; line-height: 1.11; margin-bottom: 7px; }
 .hl-lg    { font-family: 'Playfair Display', serif; font-size: clamp(15px, 3vw, 20px);  font-weight: 700; line-height: 1.16; margin-bottom: 6px; }
@@ -238,11 +155,11 @@ body {
 .w-temp { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; line-height: 1.1; }
 .w-cond { font-size: 9px; font-style: italic; color: var(--mid); }
 
-/* Footer ornament */
+/* Footer */
 .np-ornament { text-align: center; color: var(--light-rule); margin: 10px 0 5px; }
 .np-footer { font-family: 'Libre Franklin', sans-serif; font-size: 8px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--mid); text-align: center; padding: 5px 0 2px; border-top: 1px solid var(--light-rule); margin: 0 22px; }
 
-/* ── BOTTOM NAV ── */
+/* Bottom Nav */
 .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--ink); border-top: 2px solid var(--rule); display: flex; z-index: 300; }
 .nav-btn { flex: 1; background: none; border: none; color: #6b5f4e; padding: 10px 4px; font-family: 'Libre Franklin', sans-serif; font-size: 8.5px; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; transition: color 0.2s; }
 .nav-btn svg { width: 17px; height: 17px; }
@@ -254,7 +171,7 @@ body {
 .fab.spin svg { animation: fab-spin 0.85s linear infinite; }
 @keyframes fab-spin { to { transform: rotate(360deg); } }
 
-/* ── SETTINGS ── */
+/* Settings */
 #settings { display: none; max-width: 920px; margin: 0 auto; background: var(--paper); box-shadow: 0 8px 40px rgba(0,0,0,.18); padding: 26px 24px 90px; animation: rise 0.4s ease both; }
 #settings.show { display: block; }
 #settings h2 { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 900; margin-bottom: 20px; border-bottom: 2px solid var(--rule); padding-bottom: 10px; }
@@ -265,7 +182,6 @@ body {
 .set-row textarea { height: 88px; resize: vertical; }
 .set-row input:focus, .set-row textarea:focus { border-color: var(--accent); }
 .set-hint { font-family: 'Libre Franklin', sans-serif; font-size: 10px; color: var(--mid); margin-top: 5px; line-height: 1.55; }
-.set-hint a { color: var(--accent); }
 .save-btn { background: var(--rule); color: var(--paper); border: none; padding: 12px 30px; font-family: 'Libre Franklin', sans-serif; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; cursor: pointer; border-radius: 2px; transition: background 0.2s; }
 .save-btn:hover { background: var(--accent); }
 .danger-btn { background: #6b1111; }
@@ -292,18 +208,18 @@ body {
 </head>
 <body>
 
-<!-- ═══════════════ SETUP (first run) ═══════════════ -->
+<!-- ═══════════════ SETUP SCREEN ═══════════════ -->
 <div class="overlay" id="setup-overlay">
   <div class="logo-text">The Global Record</div>
   <div class="logo-sub">Brisbane Edition · Factual · Free · Daily</div>
-  <div class="card" style="text-align:center;">
+  <div class="card">
     <h2>Ready for today's edition?</h2>
-    <p>Click below to fetch the latest headlines and generate your daily broadsheet.</p>
+    <p>Tap below to fetch the latest global headlines and generate your daily broadsheet.</p>
     <button class="btn-go" onclick="handleSetup()">Launch My Daily Paper →</button>
   </div>
 </div>
 
-<!-- ═══════════════ LOADING ═══════════════ -->
+<!-- ═══════════════ LOADING SCREEN ═══════════════ -->
 <div class="overlay hidden" id="loading-overlay">
   <div class="load-logo">The Global Record</div>
   <div class="load-rule"></div>
@@ -316,43 +232,27 @@ body {
   <div class="newspaper" id="newspaper"></div>
 </div>
 
-<!-- ═══════════════ SETTINGS ═══════════════ -->
+<!-- ═══════════════ SETTINGS PANEL ═══════════════ -->
 <div id="settings">
   <h2>Edition Settings</h2>
 
-  <div class="set-h3">API Keys</div>
-  <div class="set-row">
-    <label>Google Gemini API Key</label>
-    <input type="password" id="s-key" placeholder="AIzaSy..." autocomplete="off">
-    <div class="set-hint">Free at <a href="https://aistudio.google.com/app/apikey" target="_blank">aistudio.google.com</a> — no credit card. 1,500 free requests/day.</div>
-  </div>
+  <div class="set-h3">Connection</div>
   <div class="set-row">
     <label>Cloudflare Worker URL</label>
     <input type="url" id="s-worker" placeholder="https://global-record-proxy.your-name.workers.dev">
-    <div class="set-hint">Your free RSS proxy. See SETUP.md to deploy. Leave blank to use fallback.</div>
-  </div>
-
-  <div class="set-h3">Personalisation</div>
-  <div class="set-row">
-    <label>Edition Name</label>
-    <input type="text" id="s-name" placeholder="The Global Record">
-  </div>
-  <div class="set-row">
-    <label>Extra topics of interest (optional)</label>
-    <textarea id="s-interests" placeholder="e.g. space, renewable energy, cricket, health, finance..."></textarea>
-    <div class="set-hint">The paper gives extra column inches to these subjects each day.</div>
+    <div class="set-hint">Your RSS + AI proxy. The API key lives here — not in this app.</div>
   </div>
 
   <div class="set-h3">Cache</div>
   <div class="set-row">
-    <div class="set-hint">Today's edition is cached (Brisbane date) so it loads instantly on repeat visits. It auto-regenerates each new day, or tap the red ↺ button to force a refresh now.</div>
-    <button class="save-btn danger-btn" style="margin-top:12px;" onclick="forceRegenerate()">Clear Cache &amp; Regenerate Now</button>
+    <div class="set-hint">Today's edition is cached (Brisbane date) so it loads instantly on repeat visits. It auto-regenerates each new Brisbane day, or tap the red ↺ button to force a refresh.</div>
+    <button class="save-btn danger-btn" style="margin-left:0; margin-top:12px;" onclick="forceRegenerate()">Clear Cache &amp; Regenerate Now</button>
   </div>
 
   <button class="save-btn" style="margin-top:8px;" onclick="saveSettings()">Save Settings</button>
 </div>
 
-<!-- FAB -->
+<!-- FAB Refresh Button -->
 <button class="fab" id="fab" onclick="forceRegenerate()" title="Refresh paper" style="display:none">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
     <path d="M23 4v6h-6"/><path d="M1 20v-6h6"/>
@@ -360,7 +260,7 @@ body {
   </svg>
 </button>
 
-<!-- Bottom Nav -->
+<!-- Bottom Navigation -->
 <nav class="bottom-nav" id="bottom-nav" style="display:none">
   <button class="nav-btn on" id="nav-paper" onclick="showView('paper')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h14a2 2 0 0 0 2-2V7.5L14.5 2H6a2 2 0 0 0-2 2v4"/><polyline points="14 2 14 8 20 8"/><path d="M2 15h10M2 11h4M2 19h4"/></svg>
@@ -372,77 +272,45 @@ body {
   </button>
 </nav>
 
-<!-- ═══════════════ JAVASCRIPT ═══════════════ -->
 <script>
 'use strict';
 
-/* ── Config ── */
-const SETTINGS_KEY = 'tgr_v3_settings';
-const CACHE_KEY    = 'tgr_v3_cache';
+/* ══════════════════════════════════════
+   CONFIGURATION
+   Put your Cloudflare Worker URL here.
+   The Gemini API key lives in Cloudflare
+   as env.API_KEY — never in this file.
+══════════════════════════════════════ */
+const WORKER_URL = 'https://global-record-proxy.vboiiikov.workers.dev';
+
+/* ── Storage keys ── */
+const SETTINGS_KEY = 'tgr_v4_settings';
+const CACHE_KEY    = 'tgr_v4_cache';
 const TZ           = 'Australia/Brisbane';
 
-// Fallback public proxy (less reliable than your own Worker)
-const FALLBACK_PROXY = 'https://api.allorigins.win/get?url=';
-
-/* ── Helpers ── */
-function brisbaneDate() {
-  return new Date().toLocaleDateString('en-AU', {
-    timeZone: TZ, weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-  });
-}
+/* ── Date helpers (Brisbane time) ── */
 function brisbaneDateKey() {
   return new Date().toLocaleDateString('en-CA', { timeZone: TZ }); // YYYY-MM-DD
-}
-function brisbaneDayName() {
-  return new Date().toLocaleDateString('en-AU', { timeZone: TZ, weekday: 'long' });
 }
 
 /* ── Settings ── */
 function getS() {
-  const d = { apiKey: '', workerUrl: '', name: 'The Global Record', interests: '' };
-  try { return { ...d, ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}') }; }
-  catch { return d; }
+  try { return JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}'); }
+  catch { return {}; }
 }
 function setS(s) { localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); }
 
-function handleSetup() {
-  const s = getS();
-  // We leave apiKey blank because the Cloudflare Worker now handles it!
-  s.apiKey = ""; 
-  s.workerUrl = "https://global-record-proxy.vboiiikov.workers.dev/"; // Use your actual worker URL
-  setS(s);
-  
-  document.getElementById('setup-overlay').classList.add('hidden');
-  startApp();
-}
-async function startApp() {
-  const cachedHtml = getCached();
-  if (cachedHtml) {
-    document.getElementById('newspaper').innerHTML = cachedHtml;
-    showView('paper');
-  } else {
-    // No cache? Run the generator
-    await generate();
-  }
-}
-
 function saveSettings() {
   const s = getS();
-  const k = document.getElementById('s-key').value.trim();
-  if (k) s.apiKey = k;
-  s.workerUrl  = document.getElementById('s-worker').value.trim();
-  s.name       = document.getElementById('s-name').value.trim() || 'The Global Record';
-  s.interests  = document.getElementById('s-interests').value.trim();
+  const w = document.getElementById('s-worker').value.trim();
+  if (w) s.workerUrl = w;
   setS(s);
   showView('paper');
 }
 
 function prefillSettings() {
   const s = getS();
-  document.getElementById('s-key').value       = '';
-  document.getElementById('s-worker').value    = s.workerUrl;
-  document.getElementById('s-name').value      = s.name;
-  document.getElementById('s-interests').value = s.interests;
+  document.getElementById('s-worker').value = s.workerUrl || WORKER_URL;
 }
 
 /* ── Cache ── */
@@ -458,20 +326,28 @@ function setCached(html) {
 }
 function clearCache() { localStorage.removeItem(CACHE_KEY); }
 
-/* ── Views ── */
-function showView(v) {
+/* ── Progress bar ── */
+function prog(pct, label) {
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('load-label').textContent = label;
+}
+
+/* ── View switching ── */
+function showView(view) {
   const app = document.getElementById('app');
   const set = document.getElementById('settings');
   const fab = document.getElementById('fab');
   document.getElementById('bottom-nav').style.display = 'flex';
 
-  if (v === 'paper') {
-    app.classList.add('show'); set.classList.remove('show');
+  if (view === 'paper') {
+    app.classList.add('show');
+    set.classList.remove('show');
     document.getElementById('nav-paper').classList.add('on');
     document.getElementById('nav-settings').classList.remove('on');
     fab.style.display = 'flex';
   } else {
-    app.classList.remove('show'); set.classList.add('show');
+    app.classList.remove('show');
+    set.classList.add('show');
     document.getElementById('nav-paper').classList.remove('on');
     document.getElementById('nav-settings').classList.add('on');
     fab.style.display = 'none';
@@ -479,216 +355,43 @@ function showView(v) {
   }
 }
 
-/* ── Progress ── */
-function prog(pct, label) {
-  document.getElementById('prog-fill').style.width = pct + '%';
-  document.getElementById('load-label').textContent = label;
-}
-
-/* ── Fetch news via Worker or fallback ── */
-async function fetchNews() {
-  const s = getS();
-
-  // Use own Cloudflare Worker if configured
-  if (s.workerUrl) {
-    const url = s.workerUrl.replace(/\/$/, '') + '/news';
-    const res = await fetch(url, { signal: AbortSignal.timeout(12000) });
-    if (!res.ok) throw new Error(`Worker returned ${res.status}`);
-    const data = await res.json();
-    if (data.ok && data.items?.length) return data.items;
-  }
-
-  // Fallback: fetch individual feeds via allorigins proxy
-  const feeds = [
-    'https://feeds.reuters.com/reuters/topNews',
-    'https://feeds.reuters.com/reuters/worldNews',
-    'https://feeds.bbci.co.uk/news/world/rss.xml',
-    'https://www.abc.net.au/news/feed/51120/rss.xml',
-  ];
-
-  const seen = new Set();
-  const items = [];
-
-  for (const feed of feeds) {
-    try {
-      const res = await fetch(
-        `https://api.allorigins.win/get?url=${encodeURIComponent(feed)}`,
-        { signal: AbortSignal.timeout(8000) }
-      );
-      if (!res.ok) continue;
-      const data = await res.json();
-      const parsed = parseRSS(data.contents || '');
-      for (const item of parsed) {
-        const key = item.title.slice(0, 40).toLowerCase().replace(/\s+/g, '');
-        if (!seen.has(key)) { seen.add(key); items.push(item); }
-      }
-    } catch { /* continue */ }
-  }
-
-  return items.slice(0, 40);
-}
-
-function parseRSS(xml) {
-  const items = [];
-  const re = /<item>([\s\S]*?)<\/item>/gi;
-  let m;
-  while ((m = re.exec(xml)) !== null) {
-    const b = m[1];
-    const title = cleanXml(tag(b, 'title'));
-    const desc  = cleanXml(tag(b, 'description')).slice(0, 200);
-    const date  = tag(b, 'pubDate');
-    if (title && title.length > 15) items.push({ title, description: desc, pubDate: date });
-  }
-  return items.slice(0, 15);
-}
-
-function tag(xml, t) {
-  const r = new RegExp(`<${t}[^>]*>(?:<!\\[CDATA\\[)?([\\s\\S]*?)(?:\\]\\]>)?<\\/${t}>`, 'i');
-  const m = xml.match(r);
-  return m ? m[1].trim() : '';
-}
-
-function cleanXml(s) {
-  return s.replace(/<[^>]+>/g, '')
-          .replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>')
-          .replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/\s+/g,' ').trim();
-}
-
-/* ── Build Gemini prompt ── */
-function buildPrompt(headlines, s) {
-  const dateStr   = brisbaneDate();
-  const dayName   = brisbaneDayName();
-  const interests = s.interests ? `Give extra coverage where relevant to: ${s.interests}.` : '';
-
-  const hl = headlines.map((h, i) =>
-    `${i+1}. ${h.title}${h.description ? ' — ' + h.description : ''}`
-  ).join('\n');
-
-  return `You are the editor of "${s.name}", a prestigious global broadsheet newspaper. Today is ${dateStr} (Brisbane, Australia — AEST). It is ${dayName}.
-
-ABSOLUTE RULES — never break these:
-1. FACTS ONLY. Zero opinion, zero bias, zero editorial slant. Never use words like "controversial", "slammed", "blasted", "alarming". Use neutral wire-service language.
-2. DO NOT invent events. Only expand on the real headlines provided with factual context.
-3. Cover the world broadly: geopolitics, science, economy, technology, environment, health, culture, sport.
-4. ${interests}
-5. Formal broadsheet English. Precise, clear, authoritative.
-6. Prioritise the most significant stories from the last 24–48 hours.
-
-REAL HEADLINES FROM TODAY'S WIRE (expand these into full articles):
-${hl}
-
-OUTPUT: Return ONLY a valid HTML fragment. No markdown. No code fences. No commentary. Start immediately with <div class="np-header">.
-
-Use EXACTLY these pre-defined CSS classes (they are already loaded in the page):
-
-STRUCTURE TO PRODUCE:
-
-1. HEADER:
-<div class="np-header">
-  <div class="np-meta"><span>Est. 2026 · Brisbane Edition</span><span>✦ Facts Without Favour ✦</span><span>[full date]</span></div>
-  <div class="masthead"><div class="masthead-rule"></div><h1>${s.name}</h1><div class="masthead-rule"></div><div class="masthead-sub">Global News · Factual Reporting · Brisbane, Australia · AEST</div></div>
-  <div class="section-nav">[5-6 section names with <span class="dot">◆</span> between them]</div>
-</div>
-
-2. TICKER:
-<div class="ticker-wrap"><div class="ticker-inner">[6-8 short headline bullets separated by &nbsp;&nbsp;⬥&nbsp;&nbsp;]</div></div>
-
-3. BODY — everything inside <div class="np-body">:
-
-  A) LEAD STORY (most important today):
-  <div class="section-tag">Front Page</div>
-  <div class="story-block g-lead">
-    <div class="v-line">
-      [art-kicker, hl-jumbo headline, deck, byline "Wire Services", art-body with 3-4 paragraphs with drop cap on first, pull-quote]
-    </div>
-    <div>
-      [2nd story: art-kicker, hl-xl, deck, byline, art-body 2 paragraphs]
-      <hr class="h-rule">
-      [3rd story: art-kicker, hl-lg, byline, art-body 1-2 paragraphs]
-      [boxout with 4 key numbers/facts about today's stories]
-    </div>
-  </div>
-
-  B) WORLD & SCIENCE — 3 columns:
-  <div class="section-tag">World & Science</div>
-  <div class="story-block g3">
-    [3 articles, each: art-kicker, hl-lg, byline "Wire Services", art-body 2 paragraphs]
-  </div>
-
-  C) ECONOMY & TECHNOLOGY — 2 columns:
-  <div class="section-tag">Economy & Technology</div>
-  <div class="story-block g2">
-    <div class="v-line">
-      [art-kicker, hl-xl, byline, art-body 2-3 paragraphs]
-      <div class="boxout"><h5>Markets & Economy</h5><ul>[4-5 factual economic/market bullet points]</ul></div>
-    </div>
-    <div>
-      [art-kicker, hl-lg, byline, art-body 2 paragraphs]
-      <hr class="h-rule">
-      [hl-md, art-body 1 short paragraph]
-    </div>
-  </div>
-
-  D) IN BRIEF — other stories:
-  <div class="section-tag">In Brief</div>
-  <div class="boxout"><h5>Around the World Today</h5><ul>[7-9 one-sentence factual summaries]</ul></div>
-
-  E) WEATHER — Brisbane + 5 world cities:
-  <div class="art-kicker" style="margin-top:14px;">Weather · Brisbane & World Cities</div>
-  <div class="weather-strip">
-    [6 .w-city divs for: Brisbane, London, New York, Tokyo, Dubai, Sydney — each with .w-name, .w-temp in °C (realistic for today's season), .w-cond]
-  </div>
-
-4. FOOTER:
-<div class="np-ornament">— ✦ ✦ ✦ —</div>
-<div class="np-footer">${s.name} · Brisbane, Australia · ${dateStr} · Factual Reporting · No Editorial Opinion Expressed</div>
-
-Return ONLY the HTML. Begin now with <div class="np-header">`;
-}
-
-/* ── Call Gemini ── */
-async function callGemini(prompt) {
-  const s = getS();
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${s.apiKey}`;
-  const body = {
-    contents: [{ parts: [{ text: prompt }] }],
-    generationConfig: { temperature: 0.65, maxOutputTokens: 8192 }
-  };
-  const res = await fetch(url, {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-    signal: AbortSignal.timeout(90000)
-  });
-  if (!res.ok) {
-    const e = await res.json().catch(() => ({}));
-    throw new Error(e?.error?.message || `Gemini error ${res.status}`);
-  }
-  const data = await res.json();
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-  // Strip any accidental markdown fences
-  return text.replace(/^```html?\s*/i, '').replace(/```\s*$/i, '').trim();
+/* ── Setup (first launch button) ── */
+function handleSetup() {
+  document.getElementById('setup-overlay').classList.add('hidden');
+  startApp();
 }
 
 /* ── Main generate ── */
 async function generate() {
-  const s = getS();
+  // Show loading screen
   document.getElementById('loading-overlay').classList.remove('hidden');
   document.getElementById('app').classList.remove('show');
   prog(5, 'Warming the press...');
 
+  // Resolve which worker URL to use
+  const s = getS();
+  const workerUrl = (s.workerUrl || WORKER_URL).replace(/\/$/, '');
+
   try {
-    prog(15, 'Collecting wire dispatches...');
-    const headlines = await fetchNews();
-    prog(40, `${headlines.length} stories received from the wire...`);
+    prog(20, 'Collecting wire dispatches...');
 
-    if (!headlines.length) throw new Error('No news feeds could be reached. Check your internet connection.');
+    const res = await fetch(workerUrl + '/newspaper', {
+      signal: AbortSignal.timeout(120000)
+    });
 
-    prog(55, 'Sending to the editorial desk...');
-    const prompt = buildPrompt(headlines, s);
-    const html   = await callGemini(prompt);
-    prog(92, 'Setting the front page...');
+    prog(75, 'Setting the front page...');
 
-    if (!html || html.length < 400) throw new Error('The AI returned an empty edition. Tap refresh to try again.');
+    if (!res.ok) {
+      const txt = await res.text().catch(() => '');
+      throw new Error(`Worker returned ${res.status}: ${txt.slice(0, 120)}`);
+    }
+
+    const data = await res.json();
+
+    if (!data.ok) throw new Error(data.error || 'Worker returned an error.');
+
+    const html = data.html;
+    if (!html || html.length < 400) throw new Error('Empty edition returned. Tap ↺ to try again.');
 
     setCached(html);
     document.getElementById('newspaper').innerHTML = html;
@@ -699,11 +402,10 @@ async function generate() {
       <div class="np-body">
         <div class="error-card">
           <h3>The presses have stopped.</h3>
-          <p>There was a problem generating today's edition. Common fixes:</p>
-          <p>• Check your Gemini API key in Settings (should start with AIza)<br>
-             • Check your internet connection<br>
-             • Tap the red ↺ button to try again<br>
-             • If the Worker URL is wrong, clear it in Settings to use the fallback</p>
+          <p>There was a problem generating today's edition.</p>
+          <p>• Tap the red ↺ button to try again<br>
+             • Check the Worker URL in Settings<br>
+             • Make sure your Cloudflare Worker is deployed and the API_KEY variable is set</p>
           <code>${err.message}</code>
         </div>
       </div>`;
@@ -714,29 +416,37 @@ async function generate() {
   }
 }
 
+/* ── Force refresh (red FAB button) ── */
 function forceRegenerate() {
   clearCache();
   document.getElementById('fab').classList.add('spin');
   generate();
 }
 
-/* ── Start ── */
+/* ── Start app ── */
 async function startApp() {
-  showView('paper');
   const cached = getCached();
   if (cached) {
     document.getElementById('newspaper').innerHTML = cached;
+    showView('paper');
     return;
   }
   await generate();
 }
 
-/* ── Boot ── */
+/* ── Boot on page load ── */
 (function boot() {
+  // Check if we've ever launched before
   const s = getS();
-  if (!s.apiKey) {
+  const hasLaunched = s.launched;
+
+  if (!hasLaunched) {
+    // First time — show the welcome screen
     document.getElementById('setup-overlay').classList.remove('hidden');
+    s.launched = true;
+    setS(s);
   } else {
+    // Returning user — go straight to the paper
     document.getElementById('setup-overlay').classList.add('hidden');
     startApp();
   }
